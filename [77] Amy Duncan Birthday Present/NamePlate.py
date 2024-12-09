@@ -28,7 +28,6 @@ canvasSize=(150,150) #in mm
 #max=(75,30) #in mm
 mmFactor = (90.1/23.839) # As measured
 pixelSpace = 2
-inkscapeOriginOffset=(-0.5,0.5)
 
 # Library for text
 crossStitchFont = {
@@ -100,16 +99,13 @@ def heart():
 # Defining method to draw a square
 def square(origin,x,y,color):
     pen.color(color)
-    pen.width(0.1)
     pen.up()
-    pen.goto(origin[0]-x/2, origin[1]-y/2)
-    print(str(origin[0]-x/2),str(origin[1]-y/2))
+    pen.goto(-origin[0]-x/2,-origin[1]-y/2)
     pen.down()
-    pen.goto(origin[0]-x/2, origin[1]+y/2)
-    print(str(origin[0]-x/2),str(origin[1]+y/2))
-    pen.goto(origin[0]+x/2, origin[1]+y/2)
-    pen.goto(origin[0]+x/2, origin[1]-y/2)
-    pen.goto(origin[0]-x/2, origin[1]-y/2)
+    pen.goto(-origin[0]-x/2,+origin[1]+y/2)
+    pen.goto(+origin[0]+x/2,+origin[1]+y/2)
+    pen.goto(+origin[0]+x/2,-origin[1]-y/2)
+    pen.goto(-origin[0]-x/2,-origin[1]-y/2)
     #pen.goto(origin[0]+x/2, origin[1]+y/2)
     #pen.goto(origin[0]-x/2, origin[1]+y/2)
     #pen.goto(origin[0]+x/2, origin[1]-y/2)
@@ -117,7 +113,6 @@ def square(origin,x,y,color):
 
 def circleCentre(origin,r,color):
     pen.color(color)
-    pen.width(0.1)
     pen.up()
     pen.goto(origin[0],origin[1]-r)
     pen.down()
@@ -242,31 +237,12 @@ def xstitch1():
 
 def pixelToHole(pixelMatrix,origin):
     pen.color('red')
-    pen.width(0.1)
     for i in range(len(pixelMatrix)):
-        print(pixelMatrix[i])
+        #print(pixelMatrix[i])
         pen.up()
-        pen.goto(pixelMatrix[i][0]+origin[0],pixelMatrix[i][1]+origin[1])
+        pen.goto(pixelMatrix[i][0]+origin[0],pixelMatrix[i][1]+origin[1]-pixelDiameter/2)
         pen.down()
         pen.circle(pixelDiameter/2)
-
-
-# Draw a heart 
-#heart() 
-  
-# Write text 
-#txt() 
-#pen.up()
-#pen.goto((-canvasSize[0]/2+5)*mmFactor,(canvasSize[1]/2-5)*mmFactor)
-
-#pen.down()
-#pen.forward(max[0]*mmFactor)
-#pen.right(90)
-#pen.forward(max[1]*mmFactor)
-#pen.right(90)
-#pen.forward(max[0]*mmFactor)
-#pen.right(90)
-#pen.forward(max[1]*mmFactor)
 
 # To hide turtle 
 #pen.ht() 
@@ -284,41 +260,40 @@ for i in range(len(text)):
 
 #Get Maximum size
 pixelHeightMax = yPixelMax+(len(text)-1)*pixelSpace # max text height with spacing
+#borderDimensions = ((xPixelMax+0*pixelSpace),(2*4+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
 borderDimensions = ((xPixelMax+2*pixelSpace),(2*4+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
 outlineDimensions = ((xPixelMax+5*pixelSpace),(2*4+5*pixelSpace)) # Outline shape (a rectangle for now with Pixel Space boundary)
-
-print (outlineDimensions)
 
 #########
 # Print #
 #########
 
-# Creating a turtle object(pen) 
-pen = SvgTurtle(61,18)
+# Creating a turtle object(pen)
+x=100
+y=18
+width=0.1 # Its assumed a width of 1mm
+offset = ((1-1)/2,(1-1)/2)
+margin = 10
 
-#yPixelCursor = pixelHeightMax/2 #
-#for i in range(len(text)):
-#    yPixelCursor = yPixelCursor-pixelWord[0][2]
-#    pixelToHole(pixelWord[i][0],(-pixelWord[i][1]/2,yPixelCursor))
-#    yPixelCursor = yPixelCursor-pixelSpace
+pen = SvgTurtle(outlineDimensions[0]+margin,outlineDimensions[1]+margin)
+pen.width(width)
+
+yPixelCursor = pixelHeightMax/2 #
+for i in range(len(text)):
+    yPixelCursor = yPixelCursor-pixelWord[0][2]
+    pixelToHole(pixelWord[i][0],(-pixelWord[i][1]/2-offset[0]-pixelSpace/2,yPixelCursor))
+    yPixelCursor = yPixelCursor-pixelSpace
 
 # Draw the surrounding shape to be cut
-#square(inkscapeOriginOffset,(borderDimensions[0]),(borderDimensions[1]),'blue')
+square(offset,(borderDimensions[0]),(borderDimensions[1]),'blue')
 
 # Draw the surrounding shape to be cut
-#square(inkscapeOriginOffset,outlineDimensions[0],outlineDimensions[1],'red')
+square(offset,outlineDimensions[0],outlineDimensions[1],'red')
 
 #Calibration
 #calibrate((-45,45),mmFactor,20)
 #circleCentre(inkscapeOriginOffset,1,"blue")
-square((0,0),61,18,'red')
-#10=0.45
-#20=
-#30=
-#40= 0.45
-#50=
-#60=
-
+#square(pen,(0,0),x,y,'red')
 
 pen.save_as('example.svg')
 #wait=input()
