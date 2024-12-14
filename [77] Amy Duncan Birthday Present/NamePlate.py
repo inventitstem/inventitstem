@@ -1,4 +1,5 @@
 import turtle
+import math
 from svg_turtle import SvgTurtle
 
 #########################################################
@@ -20,14 +21,14 @@ from svg_turtle import SvgTurtle
 #File setup
 
 # Parameter setup #
-pixelDiameter = 1
-holeDiameter=2 # in mm
-gridCentre=2.5 # in mm
-holeR=holeDiameter/2
-canvasSize=(150,150) #in mm
-#max=(75,30) #in mm
+pixelDiameterMm = 1
+holeDiameterMm=0.5 # in mm
+pixelSpaceMm = 2
+
 mmFactor = (90.1/23.839) # As measured
-pixelSpace = 2
+pixelSpace = pixelSpaceMm*mmFactor
+pixelDiameter= pixelDiameterMm=mmFactor
+holeDiameter=holeDiameterMm*mmFactor
 
 # Library for text
 crossStitchFont = {
@@ -63,12 +64,33 @@ crossStitchFont = {
 }
   
 # Defining a method to draw curve 
-def curve(): 
-    for i in range(200): 
-  
-        # Defining step by step curve motion 
-        pen.right(1) 
-        pen.forward(1) 
+def curve(origin,radius,angleStart,angleTotal,steps):
+    pen.up()
+    angleStep=(angleTotal)/steps
+    angle=angleStart
+    pen.goto(origin[0]+math.sin(angle)*radius,origin[1]+math.cos(angle)*radius)
+    pen.down() 
+    for i in range(steps): 
+        angle=angle+angleStep
+        pen.goto(origin[0]+math.sin(angle)*radius,origin[1]+math.cos(angle)*radius)
+    #pen.up()
+
+def curveLine(start,end,radius,steps):
+    #Get length of line
+    opposite = (end[1]-start[1])
+    adjacent = (end[0]-start[0])
+    length = (adjacent^2 + opposite^2)^-1
+    angle = math.asin(opposite/length)
+    stepX = adjacent/steps
+    stepY = opposite/steps
+
+    # TBD remaining
+    # pen.up()
+    #pen.goto(start)
+    #pen.down()
+    #for i in range(steps):
+
+    #
   
 # Defining method to draw a full heart 
 def heart(): 
@@ -77,7 +99,7 @@ def heart():
     pen.fillcolor('red') 
   
     # Start filling the color 
-    pen.begin_fill() 
+    #pen.begin_fill() 
   
     # Draw the left line 
     pen.left(140) 
@@ -94,21 +116,34 @@ def heart():
     pen.forward(112) 
   
     # Ending the filling of the color 
-    pen.end_fill() 
+    #pen.end_fill() 
 
 # Defining method to draw a square
-def square(origin,x,y,color):
+def square(origin,x,y,color,radius):
     pen.color(color)
     pen.up()
-    pen.goto(-origin[0]-x/2,-origin[1]-y/2)
+    locationX=(-origin[0]-x/2)
+    locationY=(-origin[1]-y/2)
+    pen.goto(locationX,locationY+radius) # Bottom left
     pen.down()
-    pen.goto(-origin[0]-x/2,+origin[1]+y/2)
-    pen.goto(+origin[0]+x/2,+origin[1]+y/2)
-    pen.goto(+origin[0]+x/2,-origin[1]-y/2)
-    pen.goto(-origin[0]-x/2,-origin[1]-y/2)
-    #pen.goto(origin[0]+x/2, origin[1]+y/2)
-    #pen.goto(origin[0]-x/2, origin[1]+y/2)
-    #pen.goto(origin[0]+x/2, origin[1]-y/2)
+     # Top Left
+    locationY=locationY+y
+    pen.goto(locationX,locationY-radius)
+    curve((locationX+radius,locationY-radius),radius,1.5*math.pi,0.5*math.pi,10)
+     # Top Right
+    locationX=locationX+x
+    pen.goto(locationX-radius,locationY)
+    curve((locationX-radius,locationY-radius),radius,0*math.pi,0.5*math.pi,10)
+     # Bottom Right
+    locationY=locationY-y
+    pen.goto(locationX,locationY+radius)
+    curve((locationX-radius,locationY+radius),radius,0.5*math.pi,0.5*math.pi,10)
+     # Bottom Left
+    locationX=locationX-x
+    pen.goto(locationX+radius,locationY)
+    curve((locationX+radius,locationY+radius),radius,1*math.pi,0.5*math.pi,10)
+    #Add Curved Edges
+    #curve((0,0),1,0*math.pi,2*math.pi,10)
     pen.up()
 
 def circleCentre(origin,r,color):
@@ -162,8 +197,8 @@ def xStitchWord(text,origin):
         for i in range(len(crossStitchFont[text[j]])):
             #print (crossStitchFont[text][i])
             #print(text[j] + " " + crossStitchFont[text[j]])
-            x=crossStitchFont[text[j]][i][0] + xCursor
-            y=crossStitchFont[text[j]][i][1] + yCursor
+            x=crossStitchFont[text[j]][i][0]*pixelDiameter + xCursor # Cursor position in pixel
+            y=crossStitchFont[text[j]][i][1]*pixelDiameter + yCursor # Cursor position in pixel
             pixelMatrix.append((x,y))
             if(x > xPixelMax):
                 xPixelMax = x
@@ -171,98 +206,75 @@ def xStitchWord(text,origin):
                 yPixelMax = y
     return [pixelMatrix,xPixelMax,yPixelMax]
 
-
-#defining method to write cross-stitch text pixels
-def xstitch1():
-    #text="RICH"
-    #holeLoc =[]
-    #stitchLoc=[]
-
-    cursor = (0,0)
-    #offset = (-10*mmFactor,5*mmFactor)
-
-    #pen.speed(0)
-
-    #xCursor = 0
-    #yCursor = 0
-    #xMax=0
-    #yMax=0
-
-    for j in range(len(text)):
-        #pen.clear()
-        if j > 0:
-            test=0
-        holeLoc =[]
-        stitchLoc=[]
-        xCursor = xMax + 2
-        xMax=0
-        yMax=0
-        for i in range(len(crossStitchFont[text[j]])):
-            #print (crossStitchFont[text][i])
-            x=crossStitchFont[text[j]][i][0] + xCursor
-            y=crossStitchFont[text[j]][i][1]
-            holeLoc.append((x,y))
-            holeLoc.append((x+1,y))
-            holeLoc.append((x,y+1))
-            holeLoc.append((x+1,y+1))
-
-            #Get the width and height of the character
-            if x > xMax:
-                xMax = x
-
-            if y > yMax:
-                yMax = y
-
-            #Draw crosses
-            pen.color('blue')
-            pen.width(3)
-            pen.up()
-            pen.goto((x*gridCentre+offset[0])*mmFactor,(y*gridCentre+holeR+offset[1])*mmFactor)
-            pen.down()
-            pen.goto(((x+1)*gridCentre+offset[0])*mmFactor,((y+1)*gridCentre+holeR+offset[1])*mmFactor)
-            pen.up()
-            pen.goto(((x+1)*gridCentre+offset[0])*mmFactor,(y*gridCentre+holeR+offset[1])*mmFactor)
-            pen.down()
-            pen.goto((x*gridCentre+offset[0])*mmFactor,((y+1)*gridCentre+holeR+offset[1])*mmFactor)
-
-        print("XMax = " + str(xMax) + "\t yMax = " + str(yMax))
-        #Draw holes
-        pen.color('red')
-        pen.width(1)
-        for i in range(len(holeLoc)):
-            pen.up()
-            pen.goto((holeLoc[i][0]*gridCentre+offset[0])*mmFactor,(holeLoc[i][1]*gridCentre+offset[1])*mmFactor)
-            pen.down()
-            pen.circle(holeR*mmFactor)
-
 def pixelToHole(pixelMatrix,origin):
-    pen.color('red')
+    #Each pixel has a hole in each corner Co-ordinates for each circle are from centre bottom
+    #print(str(len(pixelMatrix)*4))
+    #Draw pixels as circles
+    #pen.color('green')
+    #for i in range(len(pixelMatrix)):
+    #    #print(pixelMatrix[i])
+    #    pen.up()
+    #    pen.goto(pixelMatrix[i][0]+origin[0],pixelMatrix[i][1]+origin[1]-pixelDiameter/2) # Each Circle is referenced from bottom mid.
+    #    pen.down()
+    #    pen.circle(pixelDiameter/2)
+
+    #Draw pixels as the cross-stitch
+    pen.color('blue')
+    holeMatrix=[]
     for i in range(len(pixelMatrix)):
         #print(pixelMatrix[i])
         pen.up()
-        pen.goto(pixelMatrix[i][0]+origin[0],pixelMatrix[i][1]+origin[1]-pixelDiameter/2)
+        # Goto top right of pixel
+        holeLocation = (pixelMatrix[i][0]+origin[0]-pixelDiameter/2,pixelMatrix[i][1]+origin[1]+pixelDiameter/2)
+        holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
+        pen.goto(holeLocation)
         pen.down()
-        pen.circle(pixelDiameter/2)
+        # Bottom Left Pixel
+        holeLocation = (pixelMatrix[i][0]+origin[0]+pixelDiameter/2,pixelMatrix[i][1]+origin[1]-pixelDiameter/2)
+        holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
+        pen.goto(holeLocation)
+        pen.up()
+        #Top Left of pixel
+        holeLocation = (pixelMatrix[i][0]+origin[0]-pixelDiameter/2,pixelMatrix[i][1]+origin[1]-pixelDiameter/2)
+        holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
+        pen.goto(holeLocation)
+        pen.down()
+        #Bottom right
+        holeLocation = (pixelMatrix[i][0]+origin[0]+pixelDiameter/2,pixelMatrix[i][1]+origin[1]+pixelDiameter/2)
+        holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
+        pen.goto(holeLocation)
+        pen.up()
+
+    #print(str(len(holeMatrix)))
+    #Draw the holes for the cross-stitch
+    pen.color('red')
+    for i in range(len(holeMatrix)):
+        print(holeMatrix[i])
+        pen.up()
+        pen.goto(holeMatrix[i][0],holeMatrix[i][1]-holeDiameter/2)
+        pen.down()
+        pen.circle(holeDiameter/2)
 
 # To hide turtle 
 #pen.ht() 
-text=["CHARLIE'S","ROOM"]
+text=["G"]
 pixelWord=[]
 xPixelMax=0
 yPixelMax=0
 
 #Generate pixel matrix
 for i in range(len(text)):
+    print("Generating: " + text[i])
     pixelWord.append(xStitchWord(text[i],(0,0)))
     if pixelWord[i][1] > xPixelMax: # Get the maximum width of the text
         xPixelMax=pixelWord[i][1]
     yPixelMax=yPixelMax+pixelWord[i][2] # Get the total height of the text
 
 #Get Maximum size
-pixelHeightMax = yPixelMax+(len(text)-1)*pixelSpace # max text height with spacing
+pixelHeightMax = (yPixelMax+(len(text)-1)*pixelSpace)#*pixelDiameter # max text height is number of lines -1 as space between each space
 #borderDimensions = ((xPixelMax+0*pixelSpace),(2*4+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
-borderDimensions = ((xPixelMax+2*pixelSpace),(2*4+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
-outlineDimensions = ((xPixelMax+5*pixelSpace),(2*4+5*pixelSpace)) # Outline shape (a rectangle for now with Pixel Space boundary)
+borderDimensions = ((xPixelMax+2*pixelSpace),(2*4*pixelDiameter+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
+outlineDimensions = ((xPixelMax+5*pixelSpace),(2*4*pixelDiameter+5*pixelSpace)) # Outline shape (a rectangle for now with Pixel Space boundary)
 
 #########
 # Print #
@@ -285,15 +297,18 @@ for i in range(len(text)):
     yPixelCursor = yPixelCursor-pixelSpace
 
 # Draw the surrounding shape to be cut
-square(offset,(borderDimensions[0]),(borderDimensions[1]),'blue')
+square(offset,(borderDimensions[0]),(borderDimensions[1]),'blue',5)
 
 # Draw the surrounding shape to be cut
-square(offset,outlineDimensions[0],outlineDimensions[1],'red')
+square(offset,outlineDimensions[0],outlineDimensions[1],'red',5)
+
+# Draw heart around the text
+#curve((0,0),10,1.5*math.pi,1*math.pi,10)
 
 #Calibration
 #calibrate((-45,45),mmFactor,20)
 #circleCentre(inkscapeOriginOffset,1,"blue")
 #square(pen,(0,0),x,y,'red')
 
-pen.save_as('example.svg')
+pen.save_as('_'.join(text) + '.svg')
 #wait=input()
