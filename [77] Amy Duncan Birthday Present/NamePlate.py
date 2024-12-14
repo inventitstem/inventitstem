@@ -220,36 +220,39 @@ def pixelToHole(pixelMatrix,origin):
 
     #Draw pixels as the cross-stitch
     pen.color('blue')
+    pen.width(1)
     holeMatrix=[]
+    f=1000000000000 # factor to remove float inaccuracies. Set as high as possible
     for i in range(len(pixelMatrix)):
         #print(pixelMatrix[i])
         pen.up()
         # Goto top right of pixel
-        holeLocation = (pixelMatrix[i][0]+origin[0]-pixelDiameter/2,pixelMatrix[i][1]+origin[1]+pixelDiameter/2)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]-pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]+pixelDiameter/2)*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.down()
         # Bottom Left Pixel
-        holeLocation = (pixelMatrix[i][0]+origin[0]+pixelDiameter/2,pixelMatrix[i][1]+origin[1]-pixelDiameter/2)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]+pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]-pixelDiameter/2)*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.up()
         #Top Left of pixel
-        holeLocation = (pixelMatrix[i][0]+origin[0]-pixelDiameter/2,pixelMatrix[i][1]+origin[1]-pixelDiameter/2)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]-pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]-pixelDiameter/2)*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.down()
         #Bottom right
-        holeLocation = (pixelMatrix[i][0]+origin[0]+pixelDiameter/2,pixelMatrix[i][1]+origin[1]+pixelDiameter/2)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]+pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]+pixelDiameter/2)*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.up()
 
-    #print(str(len(holeMatrix)))
+    print(str(len(holeMatrix)))
     #Draw the holes for the cross-stitch
     pen.color('red')
+    pen.width(width)
     for i in range(len(holeMatrix)):
-        print(holeMatrix[i])
+        #print(holeMatrix[i])
         pen.up()
         pen.goto(holeMatrix[i][0],holeMatrix[i][1]-holeDiameter/2)
         pen.down()
@@ -257,7 +260,7 @@ def pixelToHole(pixelMatrix,origin):
 
 # To hide turtle 
 #pen.ht() 
-text=["G"]
+text=["GEORGIE'S","ROOM"]
 pixelWord=[]
 xPixelMax=0
 yPixelMax=0
