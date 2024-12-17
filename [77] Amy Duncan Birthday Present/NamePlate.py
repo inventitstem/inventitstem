@@ -21,13 +21,14 @@ from svg_turtle import SvgTurtle
 #File setup
 
 # Parameter setup #
-pixelDiameterMm = 1
-holeDiameterMm=0.5 # in mm
+pixelDiameterMm = 3
+holeDiameterMm=1.75 # in mm Could be 1.5mm but with korf of laser tight on the other side
 pixelSpaceMm = 2
 
 mmFactor = (90.1/23.839) # As measured
+ # 197.87365241830616 pixel = 53.7mm
 pixelSpace = pixelSpaceMm*mmFactor
-pixelDiameter= pixelDiameterMm=mmFactor
+pixelDiameter= pixelDiameterMm*mmFactor
 holeDiameter=holeDiameterMm*mmFactor
 
 # Library for text
@@ -124,6 +125,7 @@ def square(origin,x,y,color,radius):
     pen.up()
     locationX=(-origin[0]-x/2)
     locationY=(-origin[1]-y/2)
+    #print(str(x-radius-radius))
     pen.goto(locationX,locationY+radius) # Bottom left
     pen.down()
      # Top Left
@@ -260,7 +262,7 @@ def pixelToHole(pixelMatrix,origin):
 
 # To hide turtle 
 #pen.ht() 
-text=["GEORGIE'S","ROOM"]
+text=["G"]
 pixelWord=[]
 xPixelMax=0
 yPixelMax=0
