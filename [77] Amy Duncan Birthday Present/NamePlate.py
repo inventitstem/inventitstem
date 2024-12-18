@@ -21,7 +21,7 @@ from svg_turtle import SvgTurtle
 #File setup
 
 # Parameter setup #
-pixelDiameterMm = 3
+pixelDiameterMm = 3.5
 holeDiameterMm=1.75 # in mm Could be 1.5mm but with korf of laser tight on the other side
 pixelSpaceMm = 2
 
@@ -148,6 +148,16 @@ def square(origin,x,y,color,radius):
     #curve((0,0),1,0*math.pi,2*math.pi,10)
     pen.up()
 
+    #Cross hairs
+    pen.goto(origin[0]-x/2,origin[1])
+    pen.down()
+    pen.goto(origin[0]+x/2,origin[1])
+    pen.up()
+    pen.goto(origin[0],origin[1]+y/2)
+    pen.down()
+    pen.goto(origin[0],origin[1]-y/2)
+    pen.up()
+
 def circleCentre(origin,r,color):
     pen.color(color)
     pen.up()
@@ -191,25 +201,42 @@ def xStitchWord(text,origin):
     pixelMatrix =[] # Matrix to store the pixels
     xCursor = origin[0] # cursor to increment so that letters don't overlap
     yCursor = origin[1] # cursor to increment. Should not increment as all on single line
+    print(origin)
     xPixelMax=0
     yPixelMax=0
+   
     for j in range(len(text)):
         #pen.clear()
-        xCursor = xPixelMax + pixelSpace # Update the cursor ready for the next letter
+        print("Processing:" + text[j])
+        xCursor = xPixelMax # Update the cursor ready for the next letter w
+        if(j>0):
+            xCursor = xCursor + 2*pixelDiameter # Add a space between letters
+            #print("Adding space")
+
         for i in range(len(crossStitchFont[text[j]])):
             #print (crossStitchFont[text][i])
             #print(text[j] + " " + crossStitchFont[text[j]])
+
             x=crossStitchFont[text[j]][i][0]*pixelDiameter + xCursor # Cursor position in pixel
             y=crossStitchFont[text[j]][i][1]*pixelDiameter + yCursor # Cursor position in pixel
             pixelMatrix.append((x,y))
             if(x > xPixelMax):
                 xPixelMax = x
+
             if(y > yPixelMax):
                 yPixelMax = y
+
+    xPixelMax = xPixelMax + pixelDiameter # Need to add the width of the pixel
+    #print ("Pixels Wide:" + str(xPixelMax2+1))
+    #print ("Number of letters:" + str(len(text)))
+    #print ("Pixel Wide: " + str((xPixelMax2+1)*pixelDiameter + (len(text)-1)*pixelDiameter) + " XMax: " + str(xPixelMax))
+    #xPixelMax = (xPixelMax2+1)*pixelDiameter + (len(text)-1)*pixelDiameter
+
     return [pixelMatrix,xPixelMax,yPixelMax]
 
 def pixelToHole(pixelMatrix,origin):
     #Each pixel has a hole in each corner Co-ordinates for each circle are from centre bottom
+    #Each pixel is co-ordinated from bottom left
     #print(str(len(pixelMatrix)*4))
     #Draw pixels as circles
     #pen.color('green')
@@ -229,22 +256,22 @@ def pixelToHole(pixelMatrix,origin):
         #print(pixelMatrix[i])
         pen.up()
         # Goto top right of pixel
-        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]-pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]+pixelDiameter/2)*f)/f)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]+pixelDiameter)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]+pixelDiameter)*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.down()
         # Bottom Left Pixel
-        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]+pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]-pixelDiameter/2)*f)/f)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0])*f)/f,math.ceil((pixelMatrix[i][1]+origin[1])*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.up()
         #Top Left of pixel
-        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]-pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]-pixelDiameter/2)*f)/f)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0])*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]+pixelDiameter)*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.down()
         #Bottom right
-        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]+pixelDiameter/2)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1]+pixelDiameter/2)*f)/f)
+        holeLocation = (math.ceil((pixelMatrix[i][0]+origin[0]+pixelDiameter)*f)/f,math.ceil((pixelMatrix[i][1]+origin[1])*f)/f)
         holeMatrix.append(holeLocation) if holeLocation not in holeMatrix else holeMatrix
         pen.goto(holeLocation)
         pen.up()
@@ -262,7 +289,7 @@ def pixelToHole(pixelMatrix,origin):
 
 # To hide turtle 
 #pen.ht() 
-text=["G"]
+text=["GEORGIE","ROOM"]
 pixelWord=[]
 xPixelMax=0
 yPixelMax=0
@@ -273,13 +300,14 @@ for i in range(len(text)):
     pixelWord.append(xStitchWord(text[i],(0,0)))
     if pixelWord[i][1] > xPixelMax: # Get the maximum width of the text
         xPixelMax=pixelWord[i][1]
+        print ("Word:"  + " Max:" + str(xPixelMax))
     yPixelMax=yPixelMax+pixelWord[i][2] # Get the total height of the text
 
 #Get Maximum size
-pixelHeightMax = (yPixelMax+(len(text)-1)*pixelSpace)#*pixelDiameter # max text height is number of lines -1 as space between each space
+pixelHeightMax = (yPixelMax+(len(text)-1)*2*pixelDiameter)#*pixelDiameter # max text height is number of lines -1 as space between each space
 #borderDimensions = ((xPixelMax+0*pixelSpace),(2*4+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
-borderDimensions = ((xPixelMax+2*pixelSpace),(2*4*pixelDiameter+3*pixelSpace))# Border shape (a rectangle for now with pixel space boundary)
-outlineDimensions = ((xPixelMax+5*pixelSpace),(2*4*pixelDiameter+5*pixelSpace)) # Outline shape (a rectangle for now with Pixel Space boundary)
+borderDimensions = ((xPixelMax+2*pixelDiameter),(pixelHeightMax+(len(text)-1+2)*pixelDiameter))# Border shape (a rectangle for now with pixel space boundary)
+outlineDimensions = ((xPixelMax+4*pixelDiameter),(pixelHeightMax+(len(text)-1+4)*pixelDiameter)) # Outline shape (a rectangle for now with Pixel Space boundary)
 
 #########
 # Print #
@@ -295,11 +323,23 @@ margin = 10
 pen = SvgTurtle(outlineDimensions[0]+margin,outlineDimensions[1]+margin)
 pen.width(width)
 
-yPixelCursor = pixelHeightMax/2 #
+#Draw cross hairs
+#Grid system is 
+pen.up()
+pen.goto(0,(outlineDimensions[1]+margin)/2)
+pen.down()
+pen.goto(0,-(outlineDimensions[1]+margin)/2)
+pen.up()
+pen.goto((outlineDimensions[0]+margin)/2,0)
+pen.down()
+pen.goto(-(outlineDimensions[0]+margin)/2,0)
+pen.up()
+
+yPixelCursor = pixelHeightMax/2-pixelDiameter/2 #
 for i in range(len(text)):
     yPixelCursor = yPixelCursor-pixelWord[0][2]
-    pixelToHole(pixelWord[i][0],(-pixelWord[i][1]/2-offset[0]-pixelSpace/2,yPixelCursor))
-    yPixelCursor = yPixelCursor-pixelSpace
+    pixelToHole(pixelWord[i][0],(-pixelWord[i][1]/2-offset[0],yPixelCursor))
+    yPixelCursor = yPixelCursor-2*pixelDiameter
 
 # Draw the surrounding shape to be cut
 square(offset,(borderDimensions[0]),(borderDimensions[1]),'blue',5)
